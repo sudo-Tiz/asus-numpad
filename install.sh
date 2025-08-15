@@ -8,17 +8,57 @@ check_root() {
     fi
 }
 
+# Function to check if a package is installed
+check_package() {
+    local package=$1
+    local manager=$2
+    
+    if [[ "$manager" == "apt" ]]; then
+        dpkg -s "$package" &> /dev/null
+        return $?
+    elif [[ "$manager" == "pacman" ]]; then
+        pacman -Qi "$package" &> /dev/null
+        return $?
+    elif [[ "$manager" == "dnf" ]]; then
+        rpm -q "$package" &> /dev/null
+        return $?
+    fi
+    return 1
+}
+
+# Function to handle package installation for a specific package manager
+process_packages() {
+    local manager=$1
+    local install_cmd=$2
+    local packages=("${@:3}")
+    local missing_packages=()
+    
+    echo "Checking dependencies for $manager..."
+    
+    for package in "${packages[@]}"; do
+        if ! check_package "$package" "$manager"; then
+            missing_packages+=("$package")
+        fi
+    done
+    
+    if [[ ${#missing_packages[@]} -eq 0 ]]; then
+        echo "All required packages are already installed."
+        return 0
+    else
+        echo "Installing missing packages: ${missing_packages[*]}"
+        eval "$install_cmd ${missing_packages[*]}"
+        return $?
+    fi
+}
+
 # Function to install required dependencies based on package manager
 install_dependencies() {
     if [[ $(sudo apt install 2>/dev/null) ]]; then
-        echo "Installing dependencies with apt..."
-        sudo apt -y install libevdev2 python3-libevdev i2c-tools git
+        process_packages "apt" "sudo apt -y install" "libevdev2" "python3-libevdev" "i2c-tools" "git"
     elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
-        echo "Installing dependencies with pacman..."
-        sudo pacman --noconfirm -S libevdev python-libevdev i2c-tools git
+        process_packages "pacman" "sudo pacman --noconfirm -S" "libevdev" "python-libevdev" "i2c-tools" "git"
     elif [[ $(sudo dnf install 2>/dev/null) ]]; then
-        echo "Installing dependencies with dnf..."
-        sudo dnf -y install libevdev python-libevdev i2c-tools git
+        process_packages "dnf" "sudo dnf -y install" "libevdev" "python-libevdev" "i2c-tools" "git"
     else
         echo "Unsupported package manager. Please install these packages manually:"
         echo "- libevdev"
