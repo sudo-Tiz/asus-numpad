@@ -145,7 +145,6 @@ select_keyboard_layout() {
 install_service() {
     echo "Creating directory structure..."
     mkdir -p /usr/share/asus_touchpad_numpad-driver/numpad_layouts
-    mkdir -p /var/log/asus_touchpad_numpad-driver
     
     echo "Installing service files..."
     # Use main.py instead of asus_touchpad.py if it exists

@@ -72,24 +72,36 @@ The installation script will:
 
 ## Troubleshooting
 
+### Viewing Logs
+
+To see the service logs:
+```bash
+journalctl -u asus_touchpad_numpad
+```
+
+For real-time log viewing:
+```bash
+journalctl -fu asus_touchpad_numpad
+```
+
 ### Enable Debug Logging
 
-To see detailed debug information:
+To run the script with debug logging:
 ```bash
 LOG=DEBUG sudo -E /usr/share/asus_touchpad_numpad-driver/asus_touchpad.py
 ```
 
 ### Boot Failure
 
-If the service fails to start at boot (common on some distributions like Pop!_OS, Linux Mint, Elementary OS, or Solus OS), edit the service file:
+If the service fails to start at boot (common on some distributions like Pop!_OS, Linux Mint, Elementary OS, or Solus OS), you can increase the sleep time in the service file:
 
 ```bash
 sudo nano /etc/systemd/system/asus_touchpad_numpad.service
 ```
 
-Uncomment and adjust this line:
+Adjust the ExecStartPre line to increase the delay:
 ```
-# ExecStartPre=/bin/sleep 2
+ExecStartPre=/bin/sleep 5
 ```
 
 ### Uninstallation

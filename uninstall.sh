@@ -28,10 +28,10 @@ then
 	exit 1
 fi
 
-rm -f /lib/systemd/system/asus_touchpad_numpad.service
+rm -f /etc/systemd/system/asus_touchpad_numpad.service
 if [[ $? != 0 ]]
 then
-	echo "/lib/systemd/system/asus_touchpad_numpad.service cannot be removed correctly..."
+	echo "/etc/systemd/system/asus_touchpad_numpad.service cannot be removed correctly..."
 	exit 1
 fi
 
@@ -39,13 +39,6 @@ rm -rf /usr/share/asus_touchpad_numpad-driver/
 if [[ $? != 0 ]]
 then
 	echo "/usr/share/asus_touchpad_numpad-driver/ cannot be removed correctly..."
-	exit 1
-fi
-
-rm -rf /var/log/asus_touchpad_numpad-driver
-if [[ $? != 0 ]]
-then
-	echo "/var/log/asus_touchpad_numpad-driver cannot be removed correctly..."
 	exit 1
 fi
 
