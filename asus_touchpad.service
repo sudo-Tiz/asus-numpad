@@ -5,12 +5,10 @@ Description=Asus Touchpad to Numpad Handler
 Type=simple
 WorkingDirectory=/usr/share/asus_touchpad_numpad-driver
 ExecStart=/usr/share/asus_touchpad_numpad-driver/asus_touchpad.py $LAYOUT $PERCENTAGE_KEY
-StandardInput=tty-force
 StandardOutput=journal
 StandardError=journal
 TimeoutSec=5
 Restart=on-failure
-ExecStartPre=/bin/sleep 2
 
 [Install]
 WantedBy=default.target
