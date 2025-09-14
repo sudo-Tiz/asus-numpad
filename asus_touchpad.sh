@@ -1,9 +1,17 @@
 #!/bin/bash
 
+# Show usage information
+show_usage() {
+    echo "Usage: $0 [install|uninstall]"
+    echo "  install   - Install the Asus touchpad numpad driver"
+    echo "  uninstall - Uninstall the driver and clean up all files"
+    exit 1
+}
+
 # Function to check if script is running as root
 check_root() {
     if [[ $(id -u) != 0 ]]; then
-        echo "Please run the installation script as root (using sudo for example)"
+        echo "Please run this script as root (using sudo for example)"
         exit 1
     fi
 }
@@ -226,8 +234,34 @@ start_service() {
     fi
 }
 
+# Function to uninstall everything
+uninstall() {
+    echo "Uninstalling Asus touchpad numpad driver..."
+    
+    # Stop and disable service
+    systemctl stop asus_touchpad_numpad 2>/dev/null
+    systemctl disable asus_touchpad_numpad 2>/dev/null
+    
+    # Remove service file
+    rm -f /etc/systemd/system/asus_touchpad_numpad.service
+    
+    # Remove driver files
+    rm -rf /usr/share/asus_touchpad_numpad-driver/
+    
+    # Remove i2c module configuration
+    rm -f /etc/modules-load.d/i2c-dev.conf
+    
+    # Unload i2c module
+    modprobe -r i2c-dev 2>/dev/null
+    
+    # Reload systemd
+    systemctl daemon-reload
+    
+    echo "Uninstall completed successfully!"
+}
+
 # Main installation process
-main() {
+install() {
     check_root
     install_dependencies
     check_i2c
@@ -240,9 +274,25 @@ main() {
     echo
     echo "Installation completed successfully!"
     echo "To toggle the numpad, tap the top right corner of your touchpad."
-    exit 0
 }
 
-# Run the main function
-main
+# Main function
+main() {
+    check_root
+    
+    case "${1:-install}" in
+        install)
+            install
+            ;;
+        uninstall)
+            uninstall
+            ;;
+        *)
+            show_usage
+            ;;
+    esac
+}
+
+# Run the main function with all arguments
+main "$@"
 

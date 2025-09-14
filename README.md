@@ -5,7 +5,7 @@ A simple Linux driver to enable the numpad functionality on Asus laptops with to
 ## TLDR
 
 ```bash
-git clone https://github.com/sudo-Tiz/asus-numpad.git && cd asus-numpad && sudo ./install.sh
+git clone https://github.com/sudo-Tiz/asus-numpad.git && cd asus-numpad && make install
 ```
 
 ## Features
@@ -51,14 +51,14 @@ sudo dnf install libevdev python-libevdev i2c-tools git
 
 ### 2. Install the Driver
 
-Clone this repository and run the install script:
+Clone this repository and run the installation:
 ```bash
 git clone https://github.com/sudo-Tiz/asus-numpad.git
 cd asus-numpad
-sudo ./install.sh
+make install
 ```
 
-The installation script will:
+The installation process will:
 1. Check for dependencies
 2. Detect and test your touchpad
 3. Ask you to select your laptop model
@@ -108,7 +108,7 @@ ExecStartPre=/bin/sleep 5
 
 To uninstall:
 ```bash
-sudo ./uninstall.sh
+make uninstall
 ```
 
 ## Adding New Layouts
