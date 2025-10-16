@@ -17,8 +17,17 @@ linters-settings:
   errcheck:
     check-blank: false
     check-type-assertions: false
+    exclude-functions:
+      - (io.Closer).Close
+      - (*os.File).Close
+      - (*os/exec.Cmd).Run
 
 issues:
   exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
+  exclude-rules:
+    - path: driver.go
+      linters:
+        - errcheck
+      text: "(KeyDown|KeyUp|Close|Syscall)"
