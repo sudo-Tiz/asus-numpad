@@ -1,303 +1,141 @@
-# Asus Touchpad Numpad Driver# Asus Touchpad Numpad Driver
+# Asus Touchpad Numpad Driver
 
+A lightweight Linux driver written in Go that enables numpad functionality on Asus laptops with touchpad-integrated numpads.
 
-
-A simple, lightweight Linux driver written in Go to enable the numpad functionality on Asus laptops with touchpad-integrated numpads. Toggle between normal touchpad usage and numpad mode with a simple touch.A simple, lightweight Linux driver written in Go to enable the numpad functionality on Asus laptops with touchpad-integrated numpads. Toggle between normal touchpad usage and numpad mode with a simple touch.
-
-
-
-## TLDR## TLDR
-
-
-
-```bash```bash
-
-git clone https://github.com/sudo-Tiz/asus-numpad.git && cd asus-numpad && make installgit clone https://github.com/sudo-Tiz/asus-numpad.git && cd asus-numpad && make install
-
-``````
-
-
-
-## Features## Features
-
-
-
-- **Simple**: Pure Go implementation, single static binary- **Simple**: Pure Go implementation, single static binary
-
-- **Fast**: Low resource usage, minimal CPU/memory footprint- **Fast**: Low resource usage, no Python runtime required
-
-- **Flexible**: Easy-to-edit JSON layout configuration- **Flexible**: Easy-to-edit JSON layout configuration
-
-- **Lightweight**: Minimal dependencies (only i2c-tools)- **Lightweight**: Minimal dependencies (only i2c-tools)
-
-- Toggle numpad mode by tapping the top-right corner of the touchpad- Toggle numpad mode by tapping the top-right corner of the touchpad
-
-
-
-## Configuration## Configuration
-
-
-
-The numpad layout is defined in `/etc/asus-numpad/layout.json`. You can customize it to match your specific touchpad layout. The default configuration is for the VivoBook M433IA model.The numpad layout is defined in `/etc/asus-numpad/layout.json`. You can customize it to match your specific touchpad layout. The default configuration is for the VivoBook M433IA model. 
-
-
-
-Example layout structure:## Requirements
-
-```json
-
-{- Linux distribution with systemd
-
-  "name": "m433ia",- i2c-tools package
-
-  "cols": 5,- libevdev2 and python3-libevdev packages
-
-  "rows": 4,
-
-  "top_offset": 0.3,## Installation
-
-  "keys": [
-
-    ["KEY_KP7", "KEY_KP8", "KEY_KP9", "KEY_KPSLASH", "KEY_BACKSPACE"],### 1. Install Dependencies
-
-    ["KEY_KP4", "KEY_KP5", "KEY_KP6", "KEY_KPASTERISK", "KEY_BACKSPACE"],
-
-    ...For Debian/Ubuntu-based distributions:
-
-  ]```bash
-
-}sudo apt install libevdev2 python3-libevdev i2c-tools git
-
-``````
-
-
-
-## RequirementsFor Arch-based distributions:
+## Quick Start
 
 ```bash
-
-- Linux distribution with systemdsudo pacman -S libevdev python-libevdev i2c-tools git
-
-- i2c-tools package```
-
-- Go 1.16+ (only for building, not needed for running)
-
-For Fedora:
-
-## Installation```bash
-
-sudo dnf install libevdev python-libevdev i2c-tools git
-
-### Quick Install```
-
-
-
-```bash### 2. Install the Driver
-
 git clone https://github.com/sudo-Tiz/asus-numpad.git
-
-cd asus-numpadClone this repository and run the installation:
-
-make install```bash
-
-```git clone https://github.com/sudo-Tiz/asus-numpad.git
-
 cd asus-numpad
+make deps && sudo make install
+```
 
-The installation script will:make install
+## Features
 
-1. Install dependencies (i2c-tools, Go compiler if needed)```
+- **Simple**: Pure Go, single static binary
+- **Fast**: Low resource usage, optimized hot path
+- **Flexible**: JSON layout configuration
+- **Lightweight**: Only dependency is i2c-tools
 
-2. Detect and test your touchpad
+## Requirements
 
-3. Build the Go binaryThe installation process will:
+- Linux with systemd
+- i2c-tools package
+- Go 1.16+ (for building only)
 
-4. Install the binary to `/usr/local/bin/asus-numpad`1. Check for dependencies
+## Installation
 
-5. Install the default layout to `/etc/asus-numpad/layout.json`2. Detect and test your touchpad
+### 1. Install dependencies
 
-6. Set up and enable the systemd service3. Ask you to select your laptop model
-
-4. Ask for your keyboard layout (QWERTY or AZERTY)
-
-### Manual Build5. Set up and enable the systemd service
-
-
-
-If you want to just build the binary:## Usage
+The Makefile will detect your package manager automatically:
 
 ```bash
-
-make build- **Toggle numpad mode**: Tap the top-right corner of your touchpad
-
-# or- **Launch calculator**: Tap the top-left corner of your touchpad
-
-go build -o asus-numpad .
-
-```## Troubleshooting
-
-
-
-### Running Manually### Viewing Logs
-
-
-
-You can run the driver manually (requires root):To see the service logs:
-
-```bash```bash
-
-sudo ./asus-numpadjournalctl -u asus_touchpad_numpad
-
-# or with custom layout```
-
-sudo ./asus-numpad --layout-file /path/to/layout.json
-
-# or with debug loggingFor real-time log viewing:
-
-sudo ./asus-numpad --debug```bash
-
-```journalctl -fu asus_touchpad_numpad
-
+make deps
 ```
+
+Supported package managers: apt, pacman, dnf, zypper
+
+### 2. Build and install
+
+```bash
+sudo make install
+```
+
+This will:
+- Build the binary with optimizations (`-ldflags="-s -w"`)
+- Install to `/usr/local/bin/asus-numpad`
+- Install layout to `/etc/asus-numpad/layout.json`
+- Install and enable systemd service
+- Configure i2c-dev module to load at boot
 
 ## Usage
 
-### Enable Debug Logging
+**Toggle numpad**: Tap the top-right corner of your touchpad
 
-- **Toggle numpad mode**: Tap the top-right corner of your touchpad
+The touchpad LED will light up when numpad mode is active.
 
-To run the script with debug logging:
+## Configuration
 
-When numpad mode is active:```bash
+Edit `/etc/asus-numpad/layout.json`:
 
-- The touchpad LED will light upLOG=DEBUG sudo -E /usr/share/asus_touchpad_numpad-driver/asus_touchpad.py
+```json
+{
+  "try_times": 5,
+  "try_sleep_ms": 100,
+  "cols": 5,
+  "rows": 4,
+  "top_offset": 0.3,
+  "keys": [
+    ["KEY_KP7", "KEY_KP8", "KEY_KP9", "KEY_KPSLASH", "KEY_BACKSPACE"],
+    ["KEY_KP4", "KEY_KP5", "KEY_KP6", "KEY_KPASTERISK", "KEY_BACKSPACE"],
+    ["KEY_KP1", "KEY_KP2", "KEY_KP3", "KEY_KPMINUS", "KEY_RESERVED"],
+    ["KEY_KP0", "KEY_KPDOT", "KEY_KPENTER", "KEY_KPPLUS", "KEY_KPEQUAL"]
+  ]
+}
+```
 
-- Touch positions on the touchpad are mapped to numpad keys according to your layout```
+After editing, restart the service:
 
-- Tap the top-right corner again to return to normal touchpad mode
+```bash
+sudo systemctl restart asus-numpad
+```
 
-### Boot Failure
+## Makefile Targets
+
+```bash
+make build      # Build the binary
+make deps       # Install i2c-tools
+make install    # Install everything (requires sudo)
+make uninstall  # Remove all files (requires sudo)
+make clean      # Remove build artifacts
+make help       # Show all targets
+```
 
 ## Troubleshooting
 
-If the service fails to start at boot (common on some distributions like Pop!_OS, Linux Mint, Elementary OS, or Solus OS), you can increase the sleep time in the service file:
-
-### Viewing Logs
+### View logs
 
 ```bash
-
-To see the service logs:sudo nano /etc/systemd/system/asus_touchpad_numpad.service
-
-```bash```
-
-journalctl -u asus-numpad
-
-```Adjust the ExecStartPre line to increase the delay:
-
-```
-
-For real-time log viewing:ExecStartPre=/bin/sleep 5
-
-```bash```
-
 journalctl -fu asus-numpad
+```
 
-```### Uninstallation
-
-
-
-### Enable Debug LoggingTo uninstall:
+### Manual run with custom layout
 
 ```bash
-
-Edit the service file to enable debug mode:make uninstall
-
-```bash```
-
-sudo systemctl edit asus-numpad
-
-```## Adding New Layouts
-
-
-
-Add:To add support for a new laptop model, create a new Python file in the `numpad_layouts` directory with the appropriate key layout configuration.
-
-```ini
-
-[Service]## Acknowledgements
-
-ExecStart=
-
-ExecStart=/usr/local/bin/asus-numpad --debugThis project is inspired by and based on [mohamed-badaoui/asus-touchpad-numpad-driver](https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver). Many thanks to all the contributors of that project for their pioneering work on this functionality.
-
+sudo /usr/local/bin/asus-numpad --layout-file /path/to/layout.json
 ```
 
-## License
-
-Then restart:
-
-```bashThis project is free software - use, modify and share as you wish.
-
-sudo systemctl restart asus-numpad
-
-```
-
-### Touchpad Not Detected
-
-If the driver fails to detect your touchpad:
-1. Check that i2c-tools is installed: `i2cdetect -l`
-2. Verify the i2c-dev module is loaded: `lsmod | grep i2c_dev`
-3. Run with debug logging to see detection attempts
-
-### Custom Layout
-
-To customize the layout for your specific model:
-1. Edit `/etc/asus-numpad/layout.json`
-2. Adjust `cols`, `rows`, and `top_offset` to match your touchpad
-3. Modify the `keys` array to map positions to key codes
-4. Restart the service: `sudo systemctl restart asus-numpad`
-
-### Uninstallation
+### Uninstall
 
 ```bash
-make uninstall
-```
-
-## Command-Line Options
-
-```
-Usage of asus-numpad:
-  -layout-file string
-        Path to layout JSON file (default "/etc/asus-numpad/layout.json")
-  -debug
-        Enable debug logging
+sudo make uninstall
 ```
 
 ## Project Structure
 
 ```
 .
-├── main.go          # Entry point and configuration loading
-├── driver.go        # Core driver logic and event handling
-├── devices.go       # Device detection and parsing
-├── layout.json      # Default numpad layout
-├── install.sh       # Installation script
-├── Makefile         # Build and install automation
-└── README.md        # This file
+├── main.go              # Entry point and layout loading
+├── driver.go            # Core event loop and key mapping
+├── devices.go           # Device detection from /proc
+├── layout.json          # Default numpad layout (m433ia)
+├── asus-numpad.service  # Systemd service file
+├── Makefile             # Build automation
+└── README.md            # This file
 ```
 
-## Why Go?
+## Performance Optimizations
 
-The original Python version was rewritten in Go for several reasons:
-- **Performance**: Go is compiled and has much lower runtime overhead
-- **Simplicity**: Single static binary, no runtime dependencies
-- **Reliability**: Strong typing and better error handling
-- **Distribution**: Easy to build and distribute across different systems
+- Global key mapping table (no allocations in hot path)
+- Pre-compiled regex patterns
+- Cached float64 conversions
+- Optimized i2c LED control
+- Direct syscall usage for low latency
 
 ## Acknowledgements
 
-This project is inspired by and based on [mohamed-badaoui/asus-touchpad-numpad-driver](https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver). Many thanks to all the contributors of that project for their pioneering work on this functionality.
+Inspired by [mohamed-badaoui/asus-touchpad-numpad-driver](https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver).
 
 ## License
 
-This project is free software - use, modify and share as you wish.
+Free software - use, modify and share as you wish.
