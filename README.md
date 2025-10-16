@@ -1,5 +1,11 @@
 # Asus Touchpad Numpad Driver
 
+[![CI/CD](https://github.com/sudo-Tiz/asus-numpad/actions/workflows/ci.yml/badge.svg)](https://github.com/sudo-Tiz/asus-numpad/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sudo-Tiz/asus-numpad)](https://goreportcard.com/report/github.com/sudo-Tiz/asus-numpad)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/sudo-Tiz/asus-numpad)](go.mod)
+[![Release](https://img.shields.io/github/v/release/sudo-Tiz/asus-numpad)](https://github.com/sudo-Tiz/asus-numpad/releases)
+[![License](https://img.shields.io/badge/license-Free%20Software-blue.svg)](#license)
+
 A lightweight Linux driver written in Go that enables numpad functionality on Asus laptops with touchpad-integrated numpads.
 
 ## Quick Start
