@@ -1,6 +1,5 @@
 {
   "name": "m433ia",
-  "description": "Asus VivoBook M433IA layout",
   "try_times": 5,
   "try_sleep_ms": 100,
   "cols": 5,
