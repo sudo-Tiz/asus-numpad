@@ -20,19 +20,14 @@ func scanDevices() (*Device, error) {
 	eventRe := regexp.MustCompile(`event(\d+)`)
 	i2cRe := regexp.MustCompile(`i2c-(\d+)/`)
 	
-	var isTouchpad, isKeyboard bool
+	var isTouchpad bool
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
 		if (strings.Contains(line, `Name="ASUE`) || strings.Contains(line, `Name="ELAN`)) && 
 			strings.Contains(line, "Touchpad") {
-			isTouchpad, isKeyboard = true, false
-		}
-
-		if strings.Contains(line, `Name="AT Translated Set 2 keyboard`) || 
-			strings.Contains(line, `Name="Asus Keyboard`) {
-			isKeyboard, isTouchpad = true, false
+			isTouchpad = true
 		}
 
 		if isTouchpad {
@@ -49,19 +44,12 @@ func scanDevices() (*Device, error) {
 			}
 		}
 
-		if isKeyboard && strings.HasPrefix(line, "H: ") {
-			if m := eventRe.FindStringSubmatch(line); len(m) > 1 {
-				device.KeyboardPath = "/dev/input/event" + m[1]
-				isKeyboard = false
-			}
-		}
-
-		if device.TouchpadPath != "" && device.KeyboardPath != "" && device.I2CDeviceID != "" {
+		if device.TouchpadPath != "" && device.I2CDeviceID != "" {
 			break
 		}
 	}
 
-	if device.TouchpadPath == "" || device.KeyboardPath == "" || device.I2CDeviceID == "" {
+	if device.TouchpadPath == "" || device.I2CDeviceID == "" {
 		return nil, fmt.Errorf("device detection failed")
 	}
 

@@ -14,7 +14,6 @@ import (
 const defaultLayoutPath = "/etc/asus-numpad/layout.json"
 
 type Layout struct {
-	Name       string     `json:"name"`
 	TryTimes   int        `json:"try_times"`
 	TrySleepMs int        `json:"try_sleep_ms"`
 	Cols       int        `json:"cols"`
@@ -25,7 +24,6 @@ type Layout struct {
 
 type Device struct {
 	TouchpadPath string
-	KeyboardPath string
 	I2CDeviceID  string
 }
 
