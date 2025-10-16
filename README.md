@@ -27,7 +27,7 @@ make deps && sudo make install
 
 - Linux with systemd
 - i2c-tools package
-- Go 1.25+ (for building only)
+- Go 1.23+ (for building only)
 
 ## Installation
 
