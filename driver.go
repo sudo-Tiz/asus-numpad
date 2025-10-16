@@ -90,7 +90,7 @@ func (d *Driver) Run() error {
 	for {
 		var event inputEvent
 		data := (*(*[unsafe.Sizeof(event)]byte)(unsafe.Pointer(&event)))[:]
-		
+
 		if n, err := syscall.Read(d.touchpadFd, data); err != nil {
 			if err == syscall.EAGAIN {
 				time.Sleep(10 * time.Millisecond)
@@ -188,7 +188,7 @@ func (d *Driver) getTouchpadBounds() error {
 	}
 
 	var absX, absY absInfo
-	
+
 	if _, _, errno := syscall.Syscall(syscall.SYS_IOCTL, uintptr(d.touchpadFd),
 		EVIOCGABS+ABS_MT_POSITION_X, uintptr(unsafe.Pointer(&absX))); errno != 0 {
 		return errno

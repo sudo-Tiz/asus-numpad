@@ -22,13 +22,13 @@ func scanDevices() (*Device, error) {
 
 	device := &Device{}
 	scanner := bufio.NewScanner(file)
-	
+
 	var isTouchpad bool
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if (strings.Contains(line, `Name="ASUE`) || strings.Contains(line, `Name="ELAN`)) && 
+		if (strings.Contains(line, `Name="ASUE`) || strings.Contains(line, `Name="ELAN`)) &&
 			strings.Contains(line, "Touchpad") {
 			isTouchpad = true
 		}

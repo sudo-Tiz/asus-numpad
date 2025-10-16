@@ -93,5 +93,3 @@ func detectDevices(tryTimes int, trySleep time.Duration) (*Device, error) {
 	}
 	return nil, fmt.Errorf("device detection failed")
 }
-
-
