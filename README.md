@@ -132,6 +132,31 @@ sudo make uninstall
 - Optimized i2c LED control
 - Direct syscall usage for low latency
 
+## Contributing
+
+### Setup pre-commit hooks
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+This will run `gofmt` and `golangci-lint` automatically before each commit.
+
+### Manual lint and format
+
+```bash
+make lint  # Format with gofmt and run golangci-lint
+```
+
+### Requirements
+
+Install golangci-lint:
+
+```bash
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+```
+
 ## Acknowledgements
 
 Inspired by [mohamed-badaoui/asus-touchpad-numpad-driver](https://github.com/mohamed-badaoui/asus-touchpad-numpad-driver).
