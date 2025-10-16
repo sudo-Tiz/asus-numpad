@@ -1,7 +1,7 @@
 # Asus Touchpad Numpad Driver - Makefile
 # Simple and modular build system
 
-.PHONY: all build deps install uninstall clean help
+.PHONY: all build deps install uninstall clean lint help
 
 BINARY := asus-numpad
 INSTALL_PATH := /usr/local/bin
@@ -93,6 +93,13 @@ clean:
 	@rm -f $(BINARY)
 	@echo "✓ Clean complete"
 
+lint:
+	@echo "Formatting code..."
+	@gofmt -w .
+	@echo "Running linter..."
+	@golangci-lint run --timeout=2m
+	@echo "✓ Lint complete"
+
 help:
 	@echo "Asus Touchpad Numpad Driver - Makefile targets"
 	@echo ""
@@ -101,6 +108,7 @@ help:
 	@echo "  make install    - Install binary, config and service (requires sudo)"
 	@echo "  make uninstall  - Remove all installed files (requires sudo)"
 	@echo "  make clean      - Remove build artifacts"
+	@echo "  make lint       - Format and lint code"
 	@echo "  make help       - Show this help"
 	@echo ""
 	@echo "Quick start:"
