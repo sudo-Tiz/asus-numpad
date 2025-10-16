@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+var (
+	eventRe = regexp.MustCompile(`event(\d+)`)
+	i2cRe   = regexp.MustCompile(`i2c-(\d+)/`)
+)
+
 func scanDevices() (*Device, error) {
 	file, err := os.Open("/proc/bus/input/devices")
 	if err != nil {
@@ -17,8 +22,6 @@ func scanDevices() (*Device, error) {
 
 	device := &Device{}
 	scanner := bufio.NewScanner(file)
-	eventRe := regexp.MustCompile(`event(\d+)`)
-	i2cRe := regexp.MustCompile(`i2c-(\d+)/`)
 	
 	var isTouchpad bool
 

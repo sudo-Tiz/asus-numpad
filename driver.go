@@ -1,7 +1,6 @@
 package main
 
 import (
-	"math"
 	"os/exec"
 	"syscall"
 	"time"
@@ -27,6 +26,16 @@ const (
 	EVIOCGABS         = 0x80184540
 )
 
+var keyCodeMap = map[string]int{
+	"KEY_KP0": uinput.KeyKp0, "KEY_KP1": uinput.KeyKp1, "KEY_KP2": uinput.KeyKp2,
+	"KEY_KP3": uinput.KeyKp3, "KEY_KP4": uinput.KeyKp4, "KEY_KP5": uinput.KeyKp5,
+	"KEY_KP6": uinput.KeyKp6, "KEY_KP7": uinput.KeyKp7, "KEY_KP8": uinput.KeyKp8,
+	"KEY_KP9": uinput.KeyKp9, "KEY_KPDOT": uinput.KeyKpdot, "KEY_KPENTER": uinput.KeyKpenter,
+	"KEY_KPPLUS": uinput.KeyKpplus, "KEY_KPMINUS": uinput.KeyKpminus,
+	"KEY_KPASTERISK": uinput.KeyKpasterisk, "KEY_KPSLASH": uinput.KeyKpslash,
+	"KEY_KPEQUAL": uinput.KeyKpequal, "KEY_BACKSPACE": uinput.KeyBackspace,
+}
+
 type Driver struct {
 	device        *Device
 	layout        *Layout
@@ -37,6 +46,7 @@ type Driver struct {
 	x, y          int32
 	minX, maxX    int32
 	minY, maxY    int32
+	cols, rows    float64
 }
 
 func NewDriver(device *Device, layout *Layout) (*Driver, error) {
@@ -49,6 +59,8 @@ func NewDriver(device *Device, layout *Layout) (*Driver, error) {
 		device:     device,
 		layout:     layout,
 		touchpadFd: fd,
+		cols:       float64(layout.Cols),
+		rows:       float64(layout.Rows),
 	}
 
 	if err := d.getTouchpadBounds(); err != nil {
@@ -129,15 +141,15 @@ func (d *Driver) handleFingerDown() {
 	// Map touch to key position
 	xNorm := float64(d.x-d.minX) / float64(d.maxX-d.minX)
 	yNorm := float64(d.y-d.minY) / float64(d.maxY-d.minY)
-	col := int(math.Floor(float64(d.layout.Cols) * xNorm))
-	row := int(math.Floor(float64(d.layout.Rows)*yNorm - d.layout.TopOffset))
+	col := int(d.cols * xNorm)
+	row := int(d.rows*yNorm - d.layout.TopOffset)
 
 	if row < 0 || row >= d.layout.Rows || col < 0 || col >= d.layout.Cols {
 		return
 	}
 
 	keyName := d.layout.Keys[row][col]
-	if keyName == "KEY_RESERVED" || keyName == "" {
+	if keyName == "KEY_RESERVED" {
 		return
 	}
 
@@ -156,8 +168,6 @@ func (d *Driver) handleFingerUp() {
 
 func (d *Driver) activateNumlock() {
 	syscall.Syscall(syscall.SYS_IOCTL, uintptr(d.touchpadFd), EVIOCGRAB, 1)
-	d.sendI2C("0x01")
-	time.Sleep(100 * time.Millisecond)
 	d.sendI2C("0x01")
 }
 
@@ -195,14 +205,5 @@ func (d *Driver) getTouchpadBounds() error {
 }
 
 func keyNameToCode(name string) int {
-	keys := map[string]int{
-		"KEY_KP0": uinput.KeyKp0, "KEY_KP1": uinput.KeyKp1, "KEY_KP2": uinput.KeyKp2,
-		"KEY_KP3": uinput.KeyKp3, "KEY_KP4": uinput.KeyKp4, "KEY_KP5": uinput.KeyKp5,
-		"KEY_KP6": uinput.KeyKp6, "KEY_KP7": uinput.KeyKp7, "KEY_KP8": uinput.KeyKp8,
-		"KEY_KP9": uinput.KeyKp9, "KEY_KPDOT": uinput.KeyKpdot, "KEY_KPENTER": uinput.KeyKpenter,
-		"KEY_KPPLUS": uinput.KeyKpplus, "KEY_KPMINUS": uinput.KeyKpminus,
-		"KEY_KPASTERISK": uinput.KeyKpasterisk, "KEY_KPSLASH": uinput.KeyKpslash,
-		"KEY_KPEQUAL": uinput.KeyKpequal, "KEY_BACKSPACE": uinput.KeyBackspace,
-	}
-	return keys[name]
+	return keyCodeMap[name]
 }
