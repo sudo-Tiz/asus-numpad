@@ -61,18 +61,17 @@ process_packages() {
 
 # Function to install required dependencies based on package manager
 install_dependencies() {
+    # Only i2c-tools is needed for the Go version
     if [[ $(sudo apt install 2>/dev/null) ]]; then
-        process_packages "apt" "sudo apt -y install" "libevdev2" "python3-libevdev" "i2c-tools" "git"
+        process_packages "apt" "sudo apt -y install" "i2c-tools" "golang"
     elif [[ $(sudo pacman -h 2>/dev/null) ]]; then
-        process_packages "pacman" "sudo pacman --noconfirm -S" "libevdev" "python-libevdev" "i2c-tools" "git"
+        process_packages "pacman" "sudo pacman --noconfirm -S" "i2c-tools" "go"
     elif [[ $(sudo dnf install 2>/dev/null) ]]; then
-        process_packages "dnf" "sudo dnf -y install" "libevdev" "python-libevdev" "i2c-tools" "git"
+        process_packages "dnf" "sudo dnf -y install" "i2c-tools" "golang"
     else
         echo "Unsupported package manager. Please install these packages manually:"
-        echo "- libevdev"
-        echo "- python-libevdev/python3-libevdev"
         echo "- i2c-tools"
-        echo "- git"
+        echo "- go/golang"
         exit 1
     fi
 }
@@ -82,7 +81,6 @@ check_i2c() {
     echo "Loading i2c-dev module..."
     modprobe i2c-dev
     
-    # Check if module loaded successfully
     if [[ $? != 0 ]]; then
         echo "i2c-dev module cannot be loaded correctly. Make sure you have installed i2c-tools package"
         exit 1
@@ -91,7 +89,7 @@ check_i2c() {
     # Find i2c interfaces
     interfaces=$(for i in $(i2cdetect -l | grep DesignWare | sed -r "s/^(i2c\-[0-9]+).*/\1/"); do echo $i; done)
     if [ -z "$interfaces" ]; then
-        echo "No interface i2c found. Make sure you have installed libevdev packages"
+        echo "No interface i2c found. Make sure you have installed i2c-tools"
         exit 1
     fi
     
@@ -117,121 +115,75 @@ check_i2c() {
     fi
 }
 
-# Clean up any previous Python cache files
-cleanup_cache() {
-    if [[ -d numpad_layouts/__pycache__ ]]; then
-        rm -rf numpad_layouts/__pycache__
+# Function to build the Go binary
+build_binary() {
+    echo "Building Asus touchpad numpad driver..."
+    
+    cd "$(dirname "$0")"
+    
+    go build -ldflags="-s -w" -o asus-numpad .
+    
+    if [[ $? != 0 ]]; then
+        echo "Failed to build the Go binary"
+        exit 1
     fi
-}
-
-# Function to get available models from numpad_layouts directory
-get_available_models() {
-    # Get list of Python files and remove .py extension
-    local models=()
-    for file in numpad_layouts/*.py; do
-        # Skip __init__.py or any other special files
-        if [[ $(basename "$file") != __* ]]; then
-            models+=($(basename "$file" .py))
-        fi
-    done
-    echo "${models[@]}"
-}
-
-# Function to select model
-select_model() {
-    local available_models=($(get_available_models))
     
-    echo
-    echo "Select models keypad layout:"
-    PS3='Please enter your choice: '
-    
-    # Add Quit option to the list
-    options=("${available_models[@]}" "Quit")
-    
-    select opt in "${options[@]}"; do
-        if [[ $opt == "Quit" ]]; then
-            echo "Installation cancelled."
-            exit 0
-        elif [[ " ${available_models[*]} " =~ " ${opt} " ]]; then
-            model=$opt
-            break
-        else
-            echo "Invalid option $REPLY. Please try again."
-        fi
-    done
-}
-
-# Function to select keyboard layout
-select_keyboard_layout() {
-    echo
-    echo "What is your keyboard layout?"
-    PS3='Please enter your choice: '
-    options=("Qwerty" "Azerty" "Quit")
-    
-    select opt in "${options[@]}"; do
-        case $opt in
-            "Qwerty")
-                percentage_key=6 # Number 5
-                break
-                ;;
-            "Azerty")
-                percentage_key=40 # Apostrophe key
-                break
-                ;;
-            "Quit")
-                echo "Installation cancelled."
-                exit 0
-                ;;
-            *) 
-                echo "Invalid option $REPLY. Please try again."
-                ;;
-        esac
-    done
+    echo "Build completed successfully"
 }
 
 # Function to install service files
 install_service() {
     echo "Creating directory structure..."
-    mkdir -p /usr/share/asus_touchpad_numpad-driver/numpad_layouts
+    mkdir -p /usr/local/bin
+    mkdir -p /etc/asus-numpad
     
-    echo "Installing service files..."
-    # Use main.py instead of asus_touchpad.py if it exists
-    if [[ -f "main.py" ]]; then
-        install main.py /usr/share/asus_touchpad_numpad-driver/asus_touchpad.py
-    else
-        install asus_touchpad.py /usr/share/asus_touchpad_numpad-driver/
-    fi
-    
-    install -t /usr/share/asus_touchpad_numpad-driver/numpad_layouts numpad_layouts/*.py
+    echo "Installing binary and configuration..."
+    install -m 755 asus-numpad /usr/local/bin/
+    install -m 644 layout.json /etc/asus-numpad/
     
     echo "Setting up systemd service..."
-    cat asus_touchpad.service | LAYOUT=$model PERCENTAGE_KEY=$percentage_key envsubst '$LAYOUT $PERCENTAGE_KEY' > /etc/systemd/system/asus_touchpad_numpad.service
+    cat > /etc/systemd/system/asus-numpad.service << 'EOF'
+[Unit]
+Description=Asus Touchpad Numpad Driver
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/asus-numpad
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
     
     echo "Ensuring i2c-dev is loaded at boot..."
     echo "i2c-dev" | tee /etc/modules-load.d/i2c-dev.conf >/dev/null
+    
+    systemctl daemon-reload
 }
 
 # Function to enable and start service
 start_service() {
-    echo "Enabling asus_touchpad_numpad service..."
-    systemctl enable asus_touchpad_numpad
+    echo "Enabling asus-numpad service..."
+    systemctl enable asus-numpad
     
     if [[ $? != 0 ]]; then
-        echo "Something went wrong while enabling asus_touchpad_numpad.service"
+        echo "Something went wrong while enabling asus-numpad.service"
         exit 1
-    else
-        echo "Asus touchpad service enabled"
     fi
     
-    echo "Starting asus_touchpad_numpad service..."
-    systemctl restart asus_touchpad_numpad
+    echo "Starting asus-numpad service..."
+    systemctl restart asus-numpad
     
     if [[ $? != 0 ]]; then
-        echo "Something went wrong while starting asus_touchpad_numpad.service"
+        echo "Something went wrong while starting asus-numpad.service"
         exit 1
-    else
-        echo "Asus touchpad service started successfully"
     fi
+    
+    echo "Service started successfully!"
 }
 
 # Function to uninstall everything
@@ -239,14 +191,15 @@ uninstall() {
     echo "Uninstalling Asus touchpad numpad driver..."
     
     # Stop and disable service
-    systemctl stop asus_touchpad_numpad 2>/dev/null
-    systemctl disable asus_touchpad_numpad 2>/dev/null
+    systemctl stop asus-numpad 2>/dev/null
+    systemctl disable asus-numpad 2>/dev/null
     
     # Remove service file
-    rm -f /etc/systemd/system/asus_touchpad_numpad.service
+    rm -f /etc/systemd/system/asus-numpad.service
     
-    # Remove driver files
-    rm -rf /usr/share/asus_touchpad_numpad-driver/
+    # Remove binary and config
+    rm -f /usr/local/bin/asus-numpad
+    rm -rf /etc/asus-numpad
     
     # Remove i2c module configuration
     rm -f /etc/modules-load.d/i2c-dev.conf
@@ -265,15 +218,14 @@ install() {
     check_root
     install_dependencies
     check_i2c
-    cleanup_cache
-    select_model
-    select_keyboard_layout
+    build_binary
     install_service
     start_service
     
     echo
     echo "Installation completed successfully!"
     echo "To toggle the numpad, tap the top right corner of your touchpad."
+    echo "To view logs: journalctl -fu asus-numpad"
 }
 
 # Main function
@@ -295,4 +247,3 @@ main() {
 
 # Run the main function with all arguments
 main "$@"
-

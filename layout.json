@@ -1,0 +1,15 @@
+{
+  "name": "m433ia",
+  "description": "Asus VivoBook M433IA layout",
+  "try_times": 5,
+  "try_sleep_ms": 100,
+  "cols": 5,
+  "rows": 4,
+  "top_offset": 0.3,
+  "keys": [
+    ["KEY_KP7", "KEY_KP8", "KEY_KP9", "KEY_KPSLASH", "KEY_BACKSPACE"],
+    ["KEY_KP4", "KEY_KP5", "KEY_KP6", "KEY_KPASTERISK", "KEY_BACKSPACE"],
+    ["KEY_KP1", "KEY_KP2", "KEY_KP3", "KEY_KPMINUS", "KEY_RESERVED"],
+    ["KEY_KP0", "KEY_KPDOT", "KEY_KPENTER", "KEY_KPPLUS", "KEY_KPEQUAL"]
+  ]
+}
