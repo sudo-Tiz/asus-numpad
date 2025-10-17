@@ -96,6 +96,8 @@ clean:
 lint:
 	@echo "Formatting code..."
 	@gofmt -w .
+	@echo "Running go vet..."
+	@go vet ./...
 	@echo "Running linter..."
 	@golangci-lint run --timeout=2m
 	@echo "✓ Lint complete"
