@@ -25,8 +25,8 @@ make deps && sudo make install
 
 ## Requirements
 
-- Linux with systemd
 - i2c-tools package
+- Linux with systemd
 - Go 1.23+ (for building only)
 
 ## Installation
@@ -130,14 +130,6 @@ sudo make uninstall
 └── README.md            # This file
 ```
 
-## Performance Optimizations
-
-- Global key mapping table (no allocations in hot path)
-- Pre-compiled regex patterns
-- Cached float64 conversions
-- Optimized i2c LED control
-- Direct syscall usage for low latency
-
 ## Contributing
 
 ### Setup pre-commit hooks
@@ -152,15 +144,7 @@ This will run `gofmt` and `golangci-lint` automatically before each commit.
 ### Manual lint and format
 
 ```bash
-make lint  # Format with gofmt and run golangci-lint
-```
-
-### Requirements
-
-Install golangci-lint:
-
-```bash
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+pre-commit run --all-files
 ```
 
 ## Acknowledgements
