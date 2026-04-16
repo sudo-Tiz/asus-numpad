@@ -47,9 +47,14 @@ install: build
 	@modprobe i2c-dev || (echo "⚠ Failed to load i2c-dev module" && exit 1)
 	@echo "→ Installing binary to $(INSTALL_PATH)..."
 	@install -m 755 $(BINARY) $(INSTALL_PATH)/
-	@echo "→ Installing configuration to $(CONFIG_DIR)..."
-	@mkdir -p $(CONFIG_DIR)
-	@install -m 644 layout.json $(CONFIG_DIR)/
+	@if [ -f $(CONFIG_DIR)/layout.json ]; then \
+		echo "⚠ layout.json already installed. Not reinstalling it."; \
+		echo "To overwrite it, please run: sudo make install-layout"; \
+	else \
+		echo "→ Installing configuration to $(CONFIG_DIR)..."; \
+		mkdir -p $(CONFIG_DIR); \
+		install -m 644 layout.json $(CONFIG_DIR)/; \
+	fi
 	@echo "→ Installing systemd service..."
 	@install -m 644 $(SERVICE_FILE) $(SERVICE_PATH)/
 	@echo "→ Configuring i2c-dev to load at boot..."
@@ -64,6 +69,11 @@ install: build
 	@echo ""
 	@echo "Usage: Tap top-right corner to toggle numpad"
 	@echo "Logs:  journalctl -fu $(BINARY)"
+
+install-layout:
+	@echo "→ Installing configuration to $(CONFIG_DIR)..."
+	@mkdir -p $(CONFIG_DIR)
+	@install -m 644 layout.json $(CONFIG_DIR)/
 
 uninstall:
 	@echo "Uninstalling $(BINARY)..."
