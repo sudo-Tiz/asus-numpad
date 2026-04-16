@@ -6,7 +6,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/bendahl/uinput"
+	"github.com/ThomasT75/uinput"
 )
 
 type inputEvent struct {
@@ -105,9 +105,10 @@ func (d *Driver) Run() error {
 
 func (d *Driver) processEvent(event *inputEvent) {
 	if event.Type == EV_ABS {
-		if event.Code == ABS_MT_POSITION_X {
+		switch event.Code {
+		case ABS_MT_POSITION_X:
 			d.x = event.Value
-		} else if event.Code == ABS_MT_POSITION_Y {
+		case ABS_MT_POSITION_Y:
 			d.y = event.Value
 		}
 	} else if event.Type == EV_KEY && event.Code == BTN_TOOL_FINGER {
