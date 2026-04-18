@@ -102,7 +102,7 @@ make help       # Show all targets
 
 ### Numlock seems to be disabled
 
-When typing on the numpad, if it seems that numlock is disabled, you need to activate it, either with the *Numlock* key or by editing `/etc/asus-numpad/layout.json` and setting `"numlock_is_enabled": false`. In this case, restart the service (`sudo systemctl restart asus-numpad`).
+When typing on the numpad, if it seems that numlock is disabled, you need to activate it, either with the *Numlock* key or by editing `/etc/asus-numpad/layout.json` and setting `"simulate_numlock": false`. In this case, restart the service (`sudo systemctl restart asus-numpad`).
 
 ### View logs
 
