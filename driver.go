@@ -169,11 +169,19 @@ func (d *Driver) handleFingerUp() {
 func (d *Driver) activateNumlock() {
 	syscall.Syscall(syscall.SYS_IOCTL, uintptr(d.touchpadFd), EVIOCGRAB, 1)
 	d.sendI2C("0x01")
+	if d.layout.SimulateNumlock {
+		d.keyboard.KeyDown(uinput.KeyNumlock)
+		d.keyboard.KeyUp(uinput.KeyNumlock)
+	}
 }
 
 func (d *Driver) deactivateNumlock() {
 	syscall.Syscall(syscall.SYS_IOCTL, uintptr(d.touchpadFd), EVIOCGRAB, 0)
 	d.sendI2C("0x00")
+	if d.layout.SimulateNumlock {
+		d.keyboard.KeyDown(uinput.KeyNumlock)
+		d.keyboard.KeyUp(uinput.KeyNumlock)
+	}
 }
 
 func (d *Driver) sendI2C(val string) {

@@ -28,7 +28,7 @@ func scanDevices() (*Device, error) {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if (strings.Contains(line, `Name="ASUE`) || strings.Contains(line, `Name="ELAN`)) &&
+		if (strings.Contains(line, `Name="ASUE`) || strings.Contains(line, `Name="ASUP`) || strings.Contains(line, `Name="ELAN`)) &&
 			strings.Contains(line, "Touchpad") {
 			isTouchpad = true
 		}

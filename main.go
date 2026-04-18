@@ -14,12 +14,13 @@ import (
 const defaultLayoutPath = "/etc/asus-numpad/layout.json"
 
 type Layout struct {
-	TryTimes   int        `json:"try_times"`
-	TrySleepMs int        `json:"try_sleep_ms"`
-	Cols       int        `json:"cols"`
-	Rows       int        `json:"rows"`
-	TopOffset  float64    `json:"top_offset"`
-	Keys       [][]string `json:"keys"`
+	TryTimes        int        `json:"try_times"`
+	TrySleepMs      int        `json:"try_sleep_ms"`
+	Cols            int        `json:"cols"`
+	Rows            int        `json:"rows"`
+	TopOffset       float64    `json:"top_offset"`
+	SimulateNumlock bool       `json:"simulate_numlock"`
+	Keys            [][]string `json:"keys"`
 }
 
 type Device struct {

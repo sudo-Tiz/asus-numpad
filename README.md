@@ -71,6 +71,7 @@ Edit `/etc/asus-numpad/layout.json`:
   "cols": 5,
   "rows": 4,
   "top_offset": 0.3,
+  "simulate_numlock": false,
   "keys": [
     ["KEY_KP7", "KEY_KP8", "KEY_KP9", "KEY_KPSLASH", "KEY_BACKSPACE"],
     ["KEY_KP4", "KEY_KP5", "KEY_KP6", "KEY_KPASTERISK", "KEY_BACKSPACE"],
@@ -98,6 +99,10 @@ make help       # Show all targets
 ```
 
 ## Troubleshooting
+
+### Numlock seems to be disabled
+
+When typing on the numpad, if it seems that numlock is disabled, you need to activate it, either with the *Numlock* key or by editing `/etc/asus-numpad/layout.json` and setting `"simulate_numlock": true`. In this case, restart the service (`sudo systemctl restart asus-numpad`).
 
 ### View logs
 
