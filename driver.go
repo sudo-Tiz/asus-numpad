@@ -4,8 +4,6 @@ import (
 	"os/exec"
 	"syscall"
 	"unsafe"
-
-	"github.com/bendahl/uinput"
 )
 
 type inputEvent struct {
@@ -26,20 +24,20 @@ const (
 )
 
 var keyCodeMap = map[string]int{
-	"KEY_KP0": uinput.KeyKp0, "KEY_KP1": uinput.KeyKp1, "KEY_KP2": uinput.KeyKp2,
-	"KEY_KP3": uinput.KeyKp3, "KEY_KP4": uinput.KeyKp4, "KEY_KP5": uinput.KeyKp5,
-	"KEY_KP6": uinput.KeyKp6, "KEY_KP7": uinput.KeyKp7, "KEY_KP8": uinput.KeyKp8,
-	"KEY_KP9": uinput.KeyKp9, "KEY_KPDOT": uinput.KeyKpdot, "KEY_KPENTER": uinput.KeyKpenter,
-	"KEY_KPPLUS": uinput.KeyKpplus, "KEY_KPMINUS": uinput.KeyKpminus,
-	"KEY_KPASTERISK": uinput.KeyKpasterisk, "KEY_KPSLASH": uinput.KeyKpslash,
-	"KEY_KPEQUAL": uinput.KeyKpequal, "KEY_BACKSPACE": uinput.KeyBackspace,
+	"KEY_KP0": KeyKp0, "KEY_KP1": KeyKp1, "KEY_KP2": KeyKp2,
+	"KEY_KP3": KeyKp3, "KEY_KP4": KeyKp4, "KEY_KP5": KeyKp5,
+	"KEY_KP6": KeyKp6, "KEY_KP7": KeyKp7, "KEY_KP8": KeyKp8,
+	"KEY_KP9": KeyKp9, "KEY_KPDOT": KeyKpdot, "KEY_KPENTER": KeyKpenter,
+	"KEY_KPPLUS": KeyKpplus, "KEY_KPMINUS": KeyKpminus,
+	"KEY_KPASTERISK": KeyKpasterisk, "KEY_KPSLASH": KeyKpslash,
+	"KEY_KPEQUAL": KeyKpequal, "KEY_BACKSPACE": KeyBackspace,
 }
 
 type Driver struct {
 	device        *Device
 	layout        *Layout
 	touchpadFd    int
-	keyboard      uinput.Keyboard
+	keyboard      *Keyboard
 	numlock       bool
 	buttonPressed int
 	x, y          int32
@@ -67,7 +65,13 @@ func NewDriver(device *Device, layout *Layout) (*Driver, error) {
 		return nil, err
 	}
 
-	keyboard, err := uinput.CreateKeyboard("/dev/uinput", []byte("Asus Numpad"))
+	keys := make([]int, 0, len(keyCodeMap)+1)
+	for _, code := range keyCodeMap {
+		keys = append(keys, code)
+	}
+	keys = append(keys, KeyNumlock)
+
+	keyboard, err := createKeyboard("/dev/uinput", []byte("Asus Numpad"), keys)
 	if err != nil {
 		syscall.Close(fd)
 		return nil, err
@@ -167,8 +171,8 @@ func (d *Driver) activateNumlock() {
 	syscall.Syscall(syscall.SYS_IOCTL, uintptr(d.touchpadFd), EVIOCGRAB, 1)
 	d.sendI2C("0x01")
 	if d.layout.SimulateNumlock {
-		d.keyboard.KeyDown(uinput.KeyNumlock)
-		d.keyboard.KeyUp(uinput.KeyNumlock)
+		d.keyboard.KeyDown(KeyNumlock)
+		d.keyboard.KeyUp(KeyNumlock)
 	}
 }
 
@@ -176,8 +180,8 @@ func (d *Driver) deactivateNumlock() {
 	syscall.Syscall(syscall.SYS_IOCTL, uintptr(d.touchpadFd), EVIOCGRAB, 0)
 	d.sendI2C("0x00")
 	if d.layout.SimulateNumlock {
-		d.keyboard.KeyDown(uinput.KeyNumlock)
-		d.keyboard.KeyUp(uinput.KeyNumlock)
+		d.keyboard.KeyDown(KeyNumlock)
+		d.keyboard.KeyUp(KeyNumlock)
 	}
 }
 
