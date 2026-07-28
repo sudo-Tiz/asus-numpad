@@ -3,7 +3,6 @@ package main
 import (
 	"os/exec"
 	"syscall"
-	"time"
 	"unsafe"
 
 	"github.com/bendahl/uinput"
@@ -50,7 +49,7 @@ type Driver struct {
 }
 
 func NewDriver(device *Device, layout *Layout) (*Driver, error) {
-	fd, err := syscall.Open(device.TouchpadPath, syscall.O_RDONLY|syscall.O_NONBLOCK, 0)
+	fd, err := syscall.Open(device.TouchpadPath, syscall.O_RDONLY, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -87,17 +86,15 @@ func (d *Driver) Close() {
 }
 
 func (d *Driver) Run() error {
-	for {
-		var event inputEvent
-		data := (*(*[unsafe.Sizeof(event)]byte)(unsafe.Pointer(&event)))[:]
+	var event inputEvent
+	data := (*(*[unsafe.Sizeof(event)]byte)(unsafe.Pointer(&event)))[:]
 
-		if n, err := syscall.Read(d.touchpadFd, data); err != nil {
-			if err == syscall.EAGAIN {
-				time.Sleep(10 * time.Millisecond)
-				continue
-			}
+	for {
+		n, err := syscall.Read(d.touchpadFd, data)
+		if err != nil {
 			return err
-		} else if n == int(unsafe.Sizeof(event)) {
+		}
+		if n == int(unsafe.Sizeof(event)) {
 			d.processEvent(&event)
 		}
 	}
